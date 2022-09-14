@@ -1,13 +1,14 @@
 import * as React from "react";
-import BlankLayout from "../../src/layout/BlankLayout";
+import BlankLayout from "../../layout/BlankLayout";
 import { ReactNode } from "react";
 import { LockOutlined } from '@mui/icons-material';
 import { Avatar, Box, Button, Container, Grid, TextField, Typography } from '@mui/material';
 import Link from 'next/link';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import Copyright from "../../src/Copyright";
+import Copyright from "../../components/Copyright";
 import { LinkWrapper } from './style';
+import { useAuth } from '../../hooks/useAuth';
 
 interface FormValues {
   email: string;
@@ -32,13 +33,10 @@ const Login = () => {
     password: ''
   };
 
-  const handleSubmit = (values: FormValues, { resetForm }) => {
-    // console.log(values);
-    alert(
-      `email: ${values.email}
-      password: ${values.password}`
-    );
-    resetForm();
+  const { signIn } = useAuth();
+
+  const handleSubmit = async (values: FormValues) => {
+    await signIn({...values});
   };
 
   return (

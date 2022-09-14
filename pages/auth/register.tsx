@@ -12,10 +12,11 @@ import { Formik } from "formik";
 import React, { ReactNode } from "react";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
-import Copyright from "../../src/Copyright";
+import Copyright from "../../components/Copyright";
 import Link from "next/link";
 import { LinkWrapper } from "./style";
-import BlankLayout from "../../src/layout/BlankLayout";
+import BlankLayout from "../../layout/BlankLayout";
+import { api } from '../../services/apiClient';
 
 //! Yup --> validation olarak kullanılıyor
 //! Bu şemayı Formik içerisine validationShema olarak atıyoruz.
@@ -55,16 +56,14 @@ const Register = () => {
     password2: "",
   };
 
-  const handleSubmit = (values: FormValues, { resetForm }) => {
-    // console.log(values);
-    alert(
-      `username: ${values.username}
-      email: ${values.email}
-      password: ${values.password}
-      password2: ${values.password2}`
-    );
-    resetForm();
-    router.push("/login");
+  const handleSubmit = async (values: FormValues) => {
+    const result = await api.post('/users', {
+      name: values.username,
+      email: values.email,
+      password: values.password,
+      username: values.username
+    })
+    router.push("/auth/login");
   };
 
   return (
