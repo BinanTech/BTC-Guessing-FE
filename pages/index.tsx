@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useEffect } from "react";
 import type { NextPage } from "next";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
@@ -9,9 +9,15 @@ import {
   LinearProgress,
   LinearProgressProps,
 } from "@mui/material";
-import Link from "../src/Link";
-import ProTip from "../src/ProTip";
-import Copyright from "../src/Copyright";
+import Link from "../components/Link";
+import ProTip from "../components/ProTip";
+import Copyright from "../components/Copyright";
+import { useAuth } from "../hooks/useAuth";
+
+import { setupAPIClient } from '../services/api';
+import { api } from '../services/apiClient';
+
+import { withSSRAuth } from '../utils/withSSRAuth';
 
 function LinearProgressWithLabel(
   props: LinearProgressProps & { value: number }
@@ -31,6 +37,8 @@ function LinearProgressWithLabel(
 }
 
 const Home: NextPage = () => {
+  const { user, isAuthenticated, signOut } = useAuth();
+
   return (
     <Container maxWidth="lg">
       <Box
@@ -55,7 +63,7 @@ const Home: NextPage = () => {
             justifyContent="center"
             alignItems="center"
           >
-            <Typography component="h2">User Name: name</Typography>
+            <Typography component="h2">User Name: {user?.username}</Typography>
           </Grid>
           <Grid
             item
@@ -101,5 +109,15 @@ const Home: NextPage = () => {
     </Container>
   );
 };
+
+export const getServerSideProps = withSSRAuth(async ctx => {
+  const apiClient = setupAPIClient(ctx);
+
+  const response = await apiClient.get('/auth/me');
+
+  return {
+    props: {},
+  };
+});
 
 export default Home;
