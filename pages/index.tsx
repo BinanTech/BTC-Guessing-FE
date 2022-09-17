@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { NextPage } from "next";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
@@ -9,15 +9,15 @@ import {
   LinearProgress,
   LinearProgressProps,
 } from "@mui/material";
-import Link from "../components/Link";
 import ProTip from "../components/ProTip";
 import Copyright from "../components/Copyright";
 import { useAuth } from "../hooks/useAuth";
 
-import { setupAPIClient } from '../services/api';
-import { api } from '../services/apiClient';
+import { setupAPIClient } from "../services/api";
 
-import { withSSRAuth } from '../utils/withSSRAuth';
+import { withSSRAuth } from "../utils/withSSRAuth";
+import { io } from "socket.io-client";
+import Cookies from "js-cookie";
 
 function LinearProgressWithLabel(
   props: LinearProgressProps & { value: number }
@@ -36,8 +36,86 @@ function LinearProgressWithLabel(
   );
 }
 
+interface Score {
+  score?: string;
+  userId: string;
+  _id: string;
+}
+
+const socket = io("http://localhost:1080", {
+  query: {
+    token: Cookies.get("nextauth.token"),
+  },
+  path: "",
+  transports: ["websocket"],
+});
+
 const Home: NextPage = () => {
-  const { user, isAuthenticated, signOut } = useAuth();
+  const { user, isAuthenticated, guess } = useAuth();
+  const [price, setPrice] = useState<string>("");
+  const [score, setScore] = useState<string | undefined>(guess?.score);
+  const [disabled, setDisabled] = useState<boolean>(true);
+  const [counter, setCounter] = useState<number>(0);
+  const [timer, setTimer] = useState<NodeJS.Timeout>();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      socket.on("connect", () => {
+        console.log("connected");
+      });
+
+      socket.on("price", (data: string) => {
+        setPrice(data);
+        setDisabled(true);
+      });
+
+      socket.on("score", (data: string) => {
+        const score: Score = JSON.parse(data);
+        setScore(score?.score ? score.score : "0");
+        setDisabled(false);
+      });
+
+      socket.on("recieved", (data: string) => {
+        setDisabled(true);
+      });
+    }
+
+    return () => {
+      isAuthenticated && socket.disconnect();
+    };
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!disabled) {
+      const timer: NodeJS.Timeout = setInterval(() => setCounter(prev => prev + 1), 600);
+      setTimer(timer);
+    } else {
+      clearInterval(timer);
+      setCounter(0);
+    }
+
+    return () => {
+      clearInterval(timer);
+    }
+  }, [disabled]);
+
+  useEffect(() => {
+    if (counter > 99) {
+      setCounter(0);
+      clearInterval(timer);
+      setDisabled(true);
+    }
+  }, [counter])
+
+  const sendGuess = (value: string) => {
+    socket.emit(
+      "guess",
+      JSON.stringify({
+        userId: user?._id,
+        guess: value,
+      })
+    );
+  };
 
   return (
     <Container maxWidth="lg">
@@ -51,7 +129,7 @@ const Home: NextPage = () => {
         }}
       >
         <Typography variant="h4" component="h1" gutterBottom>
-          Please guess the price
+          Guessing Price
         </Typography>
         <Grid container spacing={1}>
           <Grid
@@ -74,7 +152,18 @@ const Home: NextPage = () => {
             justifyContent="center"
             alignItems="center"
           >
-            <Typography component="h2">BTC Price: 1300$</Typography>
+            <Typography component="h2">Your Score: {score}</Typography>
+          </Grid>
+          <Grid
+            item
+            spacing={3}
+            mt={3}
+            container
+            direction="row"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Typography component="h2">BTC Price: {price}</Typography>
           </Grid>
           <Grid
             item
@@ -93,12 +182,16 @@ const Home: NextPage = () => {
               justifyContent="center"
               alignItems="center"
             >
-              <Button>Up</Button>
-              <Button>Down</Button>
+              <Button onClick={() => sendGuess("up")} disabled={disabled}>
+                Up
+              </Button>
+              <Button onClick={() => sendGuess("down")} disabled={disabled}>
+                Down
+              </Button>
             </Grid>
             <Grid item xs={6}>
               <Box sx={{ width: "100%" }}>
-                <LinearProgressWithLabel value={50} />
+                <LinearProgressWithLabel value={counter} />
               </Box>
             </Grid>
           </Grid>
@@ -110,10 +203,10 @@ const Home: NextPage = () => {
   );
 };
 
-export const getServerSideProps = withSSRAuth(async ctx => {
+export const getServerSideProps = withSSRAuth(async (ctx) => {
   const apiClient = setupAPIClient(ctx);
 
-  const response = await apiClient.get('/auth/me');
+  const response = await apiClient.get("/auth/me");
 
   return {
     props: {},
