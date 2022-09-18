@@ -52,8 +52,6 @@ type AuthProviderProps = {
 
 export const AuthContext = createContext({} as AuthContextData);
 
-let authChannel: BroadcastChannel;
-
 export function signOut() {
   destroyCookie(undefined, "nextauth.token");
   destroyCookie(undefined, "nextauth.refreshToken");
@@ -80,7 +78,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       api
         .get("/auth/me")
         .then((response) => {
-          const { user, tokens, guess, price } = response.data as ResponseData;
+          const { user, guess, price } = response.data as ResponseData;
           setGuess(guess);
           setInitialPrice(price);
           if (user) setUser(user);

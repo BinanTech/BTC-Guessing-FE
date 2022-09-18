@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import type { NextPage } from "next";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
@@ -12,32 +12,10 @@ import {
 import ProTip from "../components/ProTip";
 import Copyright from "../components/Copyright";
 import { useAuth } from "../hooks/useAuth";
-import { withSSRAuth } from "../utils/withSSRAuth";
-import { setupAPIClient } from "../services/api";
-import { ResponseData } from "../context/authContext";
+import LinearProgressWithLabel from "../components/LinearProgressWithLabel";
 
 import { io } from "socket.io-client";
 import Cookies from "js-cookie";
-
-function LinearProgressWithLabel(
-  props: LinearProgressProps & { value: number }
-) {
-  return (
-    <Box sx={{ display: "flex", alignItems: "center" }}>
-      <Box sx={{ width: "100%", mr: 1 }}>
-        <LinearProgress
-          variant="determinate"
-          value={Math.round((props.value / 60) * 100)}
-        />
-      </Box>
-      <Box sx={{ minWidth: 35 }}>
-        <Typography variant="body2" color="text.secondary">{`${Math.round(
-          props.value
-        )}S`}</Typography>
-      </Box>
-    </Box>
-  );
-}
 
 interface Score {
   score?: string;
@@ -55,61 +33,65 @@ const socket = io("http://localhost:1080", {
   transports: ["websocket"],
 });
 
+const period = process.env.NEXT_PERIOD
+  ? parseInt(process.env.NEXT_PERIOD) - 1
+  : 59;
+
 const Home: NextPage = () => {
-  const { user, isAuthenticated, guess, initialPrice, signOut } = useAuth();
+  const { user, guess, initialPrice, signOut } = useAuth();
   const [price, setPrice] = useState<string>(initialPrice);
-  const [score, setScore] = useState<string | undefined>(guess?.score);
+  const [score, setScore] = useState<string | undefined>(
+    guess?.score ? guess.score : "0"
+  );
   const [previousPrice, setPriviousPrice] = useState<string>("");
-  const [disabled, setDisabled] = useState<boolean>(true);
+  const [disabled, setDisabled] = useState<boolean>(false);
   const [counter, setCounter] = useState<number>(0);
-  const [timer, setTimer] = useState<NodeJS.Timeout>();
   const [prediction, setPrediction] = useState<string>("");
+  const timer: { current: NodeJS.Timeout | null } = useRef(null);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      socket.on("connect", () => {
-        console.log("connected");
-      });
+    setPrice(initialPrice);
+    setScore(guess?.score ? guess.score : "0");
+  }, [guess, initialPrice]);
 
-      socket.on("score", (data: string) => {
-        const score: Score = JSON.parse(data);
-        setScore(score?.score ? score.score : "0");
-        setPrice(score.currentPrice);
-        setPriviousPrice(score.oldPrice);
-        setDisabled(false);
-        setCounter(0);
-      });
+  useEffect(() => {
+    socket.on("connect", () => {
+      console.log("connected");
+    });
 
-      socket.on("recieved", (data: string) => {
-        setDisabled(true);
-      });
-    }
+    socket.on("score", (data: string) => {
+      const score: Score = JSON.parse(data);
+      setScore(score?.score ? score.score : "0");
+      setPrice(score.currentPrice);
+      setPriviousPrice(score.oldPrice);
+      setDisabled(false);
+      setCounter(0);
+    });
+
+    socket.on("recieved", (data: string) => {
+      setDisabled(true);
+    });
 
     return () => {
-      isAuthenticated && socket.disconnect();
+      // socket.disconnect();
     };
-  }, [isAuthenticated]);
+  }, []);
 
   useEffect(() => {
     if (!disabled) {
-      const timer: NodeJS.Timeout = setInterval(
-        () => setCounter((prev) => prev + 1),
-        1000
-      );
-      setTimer(timer);
+      timer.current = setInterval(() => setCounter((prev) => prev + 1), 1000);
       setPrediction("");
     }
 
     return () => {
-      clearInterval(timer);
+      clearInterval(timer.current as NodeJS.Timeout);
     };
   }, [disabled]);
 
   useEffect(() => {
-    const period = process.env.NEXT_PERIOD ? parseInt(process.env.NEXT_PERIOD) - 1 : 59;
     if (counter > period) {
-      clearInterval(timer);
-      setDisabled(true);
+      clearInterval(timer.current as NodeJS.Timeout);
+      // setDisabled(true);
     }
   }, [counter]);
 
@@ -150,7 +132,7 @@ const Home: NextPage = () => {
         </Typography>
         <Button
           sx={{ position: "absolute", top: "10px", right: "10px" }}
-          onClick={async () =>await logout()}
+          onClick={async () => await logout()}
         >
           Log out
         </Button>
@@ -186,7 +168,9 @@ const Home: NextPage = () => {
             justifyContent="center"
             alignItems="center"
           >
-            <Typography component="h2">Previous BTC Price: {previousPrice}</Typography>
+            <Typography component="h2">
+              Previous BTC Price: {previousPrice}
+            </Typography>
           </Grid>
           <Grid
             item
@@ -256,15 +240,5 @@ const Home: NextPage = () => {
     </Container>
   );
 };
-
-export const getServerSideProps = withSSRAuth(async (ctx) => {
-  const apiClient = setupAPIClient(ctx);
-
-  await apiClient.get("/auth/me");
-
-  return {
-    props: {},
-  };
-});
 
 export default Home;
