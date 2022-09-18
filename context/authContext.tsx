@@ -16,29 +16,34 @@ export type Guess = {
   score: string;
 }
 
-type SignInCredentials = {
+export type SignInCredentials = {
   email: string;
   password: string;
 };
 
-type AuthContextData = {
+export type AuthContextData = {
   signIn: (credentials: SignInCredentials) => Promise<void>;
   signOut: () => void;
-  user: User | undefined;
+  setInitialPrice: (price: string) => void;
+  setGuess: (guess: Guess) => void;
+  setUser: (user: User) => void;
+  user: User;
   isError: boolean;
   isAuthenticated: boolean;
-  guess: Guess | undefined;
+  guess: Guess;
+  initialPrice: string;
 };
 
-interface Tokens {
+export interface Tokens {
   accessToken: string;
   refreshToken: string;
 }
 
-interface ResponseData {
+export interface ResponseData {
   tokens: Tokens
   user: User;
   guess: Guess;
+  price: string;
 }
 
 type AuthProviderProps = {
@@ -59,11 +64,12 @@ export function signOut() {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<User>();
+  const [user, setUser] = useState<User>({} as User);
   const [isError, setIsError] = useState(false);
   const isAuthenticated = !!user;
   const router = useRouter();
-  const [guess, setGuess] = useState<Guess>();
+  const [guess, setGuess] = useState<Guess>({} as Guess);
+  const [initialPrice, setInitialPrice] = useState<string>('');
 
   useEffect(() => {
     if (router.asPath.split("/")[1] === "auth") return;
@@ -74,8 +80,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       api
         .get("/auth/me")
         .then((response) => {
-          const { user, tokens, guess } = response.data as ResponseData;
+          const { user, tokens, guess, price } = response.data as ResponseData;
           setGuess(guess);
+          setInitialPrice(price);
           if (user) setUser(user);
           else signOut();
         })
@@ -92,8 +99,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         password,
       });
 
-      const { tokens, user, guess } = response.data as ResponseData;
+      const { tokens, user, guess, price } = response.data as ResponseData;
       setGuess(guess);
+      setInitialPrice(price);
       setCookie(undefined, "nextauth.token", tokens.accessToken, {
         maxAge: 60 * 60 * 24 * 30, // 30 Dias
         path: "/",
@@ -123,7 +131,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   return (
     <AuthContext.Provider
-      value={{ signIn, signOut, isAuthenticated, isError, user, guess }}
+      value={{ signIn, signOut, isAuthenticated, isError, user, guess, initialPrice, setInitialPrice, setGuess, setUser }}
     >
       {children}
     </AuthContext.Provider>
