@@ -106,7 +106,8 @@ const Home: NextPage = () => {
   }, [disabled]);
 
   useEffect(() => {
-    if (counter > 59) {
+    const period = process.env.NEXT_PERIOD ? parseInt(process.env.NEXT_PERIOD) - 1 : 59;
+    if (counter > period) {
       clearInterval(timer);
       setDisabled(true);
     }
