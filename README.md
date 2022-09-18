@@ -17,13 +17,7 @@ NEXT_PERIOD=60 //round per 1 minute
 
 ```bash
 # development
-$ yarn start
-
-# watch mode
-$ yarn start:dev
-
-# production mode
-$ yarn start:prod
+$ yarn dev
 ```
 ### URL
  if you didn't set port in .env, visit https://localhost:3000
