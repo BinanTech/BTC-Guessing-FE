@@ -37,6 +37,11 @@ const period = process.env.NEXT_PERIOD
   ? parseInt(process.env.NEXT_PERIOD) - 1
   : 59;
 
+const refinePrice = (score: string): string => {
+  if (!score) return "0";
+  return (Math.floor(parseFloat(score) * 100) / 100).toString();
+};
+
 const Home: NextPage = () => {
   const { user, guess, initialPrice, signOut } = useAuth();
   const [price, setPrice] = useState<string>(initialPrice);
@@ -44,7 +49,7 @@ const Home: NextPage = () => {
     guess?.score ? guess.score : "0"
   );
   const [previousPrice, setPriviousPrice] = useState<string>("");
-  const [disabled, setDisabled] = useState<boolean>(false);
+  const [disabled, setDisabled] = useState<boolean>(true);
   const [counter, setCounter] = useState<number>(0);
   const [prediction, setPrediction] = useState<string>("");
   const timer: { current: NodeJS.Timeout | null } = useRef(null);
@@ -71,27 +76,20 @@ const Home: NextPage = () => {
     socket.on("recieved", (data: string) => {
       setDisabled(true);
     });
-
-    return () => {
-      // socket.disconnect();
-    };
   }, []);
 
   useEffect(() => {
-    if (!disabled) {
+    if (!disabled && !timer.current) {
       timer.current = setInterval(() => setCounter((prev) => prev + 1), 1000);
       setPrediction("");
     }
-
-    return () => {
-      clearInterval(timer.current as NodeJS.Timeout);
-    };
   }, [disabled]);
 
   useEffect(() => {
     if (counter > period) {
       clearInterval(timer.current as NodeJS.Timeout);
-      // setDisabled(true);
+      timer.current = null;
+      setDisabled(true);
     }
   }, [counter]);
 
@@ -107,7 +105,7 @@ const Home: NextPage = () => {
   };
 
   const logout = async () => {
-    await socket.disconnect();
+    if (socket.connected) await socket.disconnect();
     await signOut();
   };
 
@@ -169,7 +167,7 @@ const Home: NextPage = () => {
             alignItems="center"
           >
             <Typography component="h2">
-              Previous BTC Price: {previousPrice}
+              Previous BTC Price: {refinePrice(previousPrice)}
             </Typography>
           </Grid>
           <Grid
@@ -181,7 +179,9 @@ const Home: NextPage = () => {
             justifyContent="center"
             alignItems="center"
           >
-            <Typography component="h2">Current BTC Price: {price}</Typography>
+            <Typography component="h2">
+              Current BTC Price: {refinePrice(price)}
+            </Typography>
           </Grid>
           <Grid
             item
