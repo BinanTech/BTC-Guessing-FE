@@ -15,6 +15,9 @@ import LinearProgressWithLabel from "../components/LinearProgressWithLabel";
 import { io } from "socket.io-client";
 import Cookies from "js-cookie";
 
+import { withSSRAuth } from "../utils/withSSRAuth";
+import { setupAPIClient } from "../services/api";
+
 interface Score {
   score?: string;
   userId: string;
@@ -238,5 +241,15 @@ const Home: NextPage = () => {
     </Container>
   );
 };
+
+export const getServerSideProps = withSSRAuth(async (ctx) => {
+  const apiClient = setupAPIClient(ctx);
+
+  await apiClient.get("/auth/me");
+
+  return {
+    props: {},
+  };
+});
 
 export default Home;
