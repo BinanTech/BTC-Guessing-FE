@@ -15,7 +15,7 @@ interface FormValues {
   password: string;
 }
 
-const signUpValidationSchema = Yup.object().shape({
+const signUpValidationSchema: Yup.SchemaOf<FormValues> = Yup.object().shape({
   email: Yup.string().email('Invalid Email').required('Email is required'),
   password: Yup.string()
     .required('No password provided')

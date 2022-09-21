@@ -17,15 +17,18 @@ import Link from "next/link";
 import { LinkWrapper } from "./style";
 import BlankLayout from "../../layout/BlankLayout";
 import { api } from '../../services/apiClient';
+interface FormValues {
+  username: string;
+  email: string;
+  password: string;
+  password2: string;
+}
 
-//! Yup --> validation olarak kullanılıyor
-//! Bu şemayı Formik içerisine validationShema olarak atıyoruz.
-const signUpValidationSchema = Yup.object().shape({
+const signUpValidationSchema: Yup.SchemaOf<FormValues> = Yup.object().shape({
   username: Yup.string()
     .required("Display name is required")
     .min(2, "Too short")
     .max(15, "Must be 15 char or less"),
-  //! En az 2 karakter olması lazım. olmazsa yanına yazdığımız mesajı
   email: Yup.string().email("Invalid Email").required("Email is required"),
   password: Yup.string()
     .required("No password provided")
@@ -39,13 +42,6 @@ const signUpValidationSchema = Yup.object().shape({
     .min(8, "Password is too short - should be 8 chars minimum")
     .oneOf([Yup.ref("password"), null], "Passwords must match"),
 });
-
-interface FormValues {
-  username: string;
-  email: string;
-  password: string;
-  password2: string;
-}
 
 const Register = () => {
   const router = useRouter();
