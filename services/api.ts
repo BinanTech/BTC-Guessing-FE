@@ -11,7 +11,7 @@ export function setupAPIClient(ctx: any = undefined) {
   console.log(process.env, "env");
 
   const api = axios.create({
-    baseURL: `${process.env.NEXT_BACKEND_URL}:${process.env.NEXT_BACKEND_PORT}/api`,
+    baseURL: `${process.env.NEXT_BACKEND_URL}/api`,
     headers: {
       Authorization: `Bearer ${cookies["nextauth.token"]}`,
     },

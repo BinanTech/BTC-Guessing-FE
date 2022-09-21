@@ -23,7 +23,7 @@ interface Score {
   currentPrice: string;
 }
 
-const socket = io(`${process.env.NEXT_BACKEND_URL}:${process.env.NEXT_BACKEND_PORT}`, {
+const socket = io(process.env.NEXT_BACKEND_URL as string, {
   query: {
     token: Cookies.get("nextauth.token"),
   },
