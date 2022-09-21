@@ -10,7 +10,7 @@ export function setupAPIClient(ctx: any = undefined) {
   let cookies = parseCookies(ctx);
 
   const api =  axios.create({
-    baseURL: 'http://localhost:5000/api',
+    baseURL: `${process.env.NEXT_BACKEND_URL}/api`,
     headers: {
       Authorization: `Bearer ${cookies['nextauth.token']}`
     }
@@ -19,7 +19,8 @@ export function setupAPIClient(ctx: any = undefined) {
   api.interceptors.response.use(response => {
     return response;
   }, (error: AxiosError) => {
-    if (error.response.status === 401) {
+    if (error?.response?.status === 401) {
+      // @ts-ignore
       if (error.response.data?.code === 'token.expired') {
         cookies = parseCookies(ctx);
   
@@ -44,6 +45,7 @@ export function setupAPIClient(ctx: any = undefined) {
               path: '/'
             });
     
+            // @ts-ignore
             api.defaults.headers['Authorization'] = `Bearer ${tokens.accessToken}`;
   
             failedRequestQueue.forEach(request => request.onSuccess(tokens.accessToken));
@@ -63,6 +65,7 @@ export function setupAPIClient(ctx: any = undefined) {
         return new Promise((resolve, reject) => {
           failedRequestQueue.push({
             onSuccess: (token: string) => {
+              // @ts-ignore
               originalConfig.headers['Authorization'] = `Bearer ${token}`;
   
               resolve(api(originalConfig));

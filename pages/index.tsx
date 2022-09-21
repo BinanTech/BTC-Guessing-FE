@@ -25,7 +25,7 @@ interface Score {
   currentPrice: string;
 }
 
-const socket = io("http://localhost:1080", {
+const socket = io(process.env.NEXT_BACKEND_URL as string, {
   query: {
     token: Cookies.get("nextauth.token"),
   },
