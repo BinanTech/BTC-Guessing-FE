@@ -115,6 +115,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       setUser(user);
 
+      // @ts-ignore
       api.defaults.headers["Authorization"] = `Bearer ${tokens.accessToken}`;
 
       setIsError(false);
