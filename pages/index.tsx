@@ -5,9 +5,7 @@ import Typography from "@mui/material/Typography";
 import {
   Box,
   Grid,
-  Button,
-  LinearProgress,
-  LinearProgressProps,
+  Button
 } from "@mui/material";
 import ProTip from "../components/ProTip";
 import Copyright from "../components/Copyright";
@@ -25,7 +23,7 @@ interface Score {
   currentPrice: string;
 }
 
-const socket = io(process.env.NEXT_BACKEND_URL as string, {
+const socket = io(`${process.env.NEXT_BACKEND_URL}:${process.env.NEXT_BACKEND_PORT}`, {
   query: {
     token: Cookies.get("nextauth.token"),
   },

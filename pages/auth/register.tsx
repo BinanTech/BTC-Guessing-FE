@@ -14,7 +14,7 @@ import { useRouter } from "next/router";
 import * as Yup from "yup";
 import Copyright from "../../components/Copyright";
 import Link from "next/link";
-import { LinkWrapper } from "./style";
+import { LinkWrapper } from "../../components/style";
 import BlankLayout from "../../layout/BlankLayout";
 import { api } from '../../services/apiClient';
 interface FormValues {

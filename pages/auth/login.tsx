@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import Copyright from "../../components/Copyright";
-import { LinkWrapper } from './style';
+import { LinkWrapper } from '../../components/style';
 import { useAuth } from '../../hooks/useAuth';
 
 interface FormValues {
