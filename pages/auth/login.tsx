@@ -36,7 +36,7 @@ const Login = () => {
   const { signIn } = useAuth();
 
   const handleSubmit = async (values: FormValues) => {
-    await signIn({...values});
+    await signIn({ ...values });
   };
 
   return (
@@ -61,24 +61,17 @@ const Login = () => {
       <Typography sx={{ margin: '1rem' }} variant='h4'>
         Login
       </Typography>
-      {/* //! Bütün formu sarmallıyoruz. Kendi local state i var. ilave olarak state tanımlamıyoruz. Sadece yukarıda const ile initialValues tanımlıyoruz. initial değerleri formik tagi içerisine tanımlıyoruz. */}
       <Formik
         initialValues={initialValues}
         onSubmit={handleSubmit}
-        //! Yup ile hazırladığımız validationu buraya gönderiyoruz.
         validationSchema={signUpValidationSchema}
       >
-        {/* //!Bütün formu curly braces içerisine alıyoruz. Ve arrow function kullanarak bütün değişkenleri burada tanımlıyoruz. Ayrıca değerleri destructuring yapmak önemli  */}
         {({
-          //!Parametre olarak tanımladığımız (values) değişkenleri TextField içerisinde value değişkenlerine atıyoruz.
           values,
           handleChange,
-          //! handleSubmit önce burada, daha sonra Formik içerisinde tanımlıyoruz. Müteakiben fonksiyonu yukarıda oluşturuyoruz.
           handleSubmit,
-          //! touched and errors and handleBlur--> validation hatasını almak için eklememiz gerekiyor.
           touched,
           errors,
-          //! handleBlur --> focustan yani inputtan çıktığımızda blur oluyor.
           handleBlur
         }) => (
           <form onSubmit={handleSubmit}>
@@ -101,7 +94,7 @@ const Login = () => {
       <p>
         Don't have an account yet?
         <Link href='/auth/register'>
-            <LinkWrapper>Register.</LinkWrapper>
+          <LinkWrapper>Register.</LinkWrapper>
         </Link>
       </p>
       <Box mt={5}>

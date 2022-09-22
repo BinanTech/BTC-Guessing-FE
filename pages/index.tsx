@@ -72,6 +72,7 @@ const Home: NextPage = () => {
       setPriviousPrice(score.oldPrice);
       setDisabled(false);
       setCounter(0);
+      setPrediction("");
     });
 
     socket.on("recieved", (data: string) => {

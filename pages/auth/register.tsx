@@ -66,7 +66,6 @@ const Register = () => {
     <Container
       sx={{
         marginTop: "3rem",
-        // mt: 6,
         height: "calc(100vh - 3rem)",
         textAlign: "center",
       }}
@@ -75,8 +74,7 @@ const Register = () => {
       <Avatar
         sx={{
           margin: "1rem auto",
-          bgcolor: "primary.main",
-          // bgcolor: blue[500],
+          bgcolor: "primary.main"
         }}
       >
         <LockOutlined />
@@ -84,41 +82,30 @@ const Register = () => {
       <Typography sx={{ margin: "1rem" }} variant="h4">
         Sign Up
       </Typography>
-      {/* //! Bütün formu sarmallıyoruz. Kendi local state i var. ilave olarak state tanımlamıyoruz. Sadece yukarıda const ile initialValues tanımlıyoruz. initial değerleri formik tagi içerisine tanımlıyoruz. */}
       <Formik
         initialValues={initialValues}
         onSubmit={handleSubmit}
-        //! Yup ile hazırladığımız validationu buraya gönderiyoruz.
         validationSchema={signUpValidationSchema}
       >
-        {/* //!Bütün formu curly braces içerisine alıyoruz. Ve arrow function kullanarak bütün değişkenleri burada tanımlıyoruz. Ayrıca değerleri destructuring yapmak önemli  */}
         {({
-          //!Parametre olarak tanımladığımız (values) değişkenleri TextField içerisinde value değişkenlerine atıyoruz.
           values,
           handleChange,
-          //! handleSubmit önce burada, daha sonra Formik içerisinde tanımlıyoruz. Müteakiben fonksiyonu yukarıda oluşturuyoruz.
           handleSubmit,
-          //! touched and errors and handleBlur--> validation hatasını almak için eklememiz gerekiyor.
           touched,
           errors,
-          //! handleBlur --> focustan yani inputtan çıktığımızda blur oluyor.
           handleBlur,
         }) => (
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
               <Grid item xs={12}>
-                {/* //! xs={12} --> 12 birim yer kapşlasın */}
                 <TextField
                   name="username"
                   label="User Name"
                   variant="outlined"
                   value={values.username}
                   onChange={handleChange}
-                  //! onBlur --> focustan çıktıktan sonra
                   onBlur={handleBlur}
-                  //! helper text input altındaki validation uyarısı
                   helperText={touched.username && errors.username}
-                  //! uyarıyı error şeklinde vermesi için (rengi kırmızı oldu)
                   error={touched.username && Boolean(errors.username)}
                   fullWidth
                 />

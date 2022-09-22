@@ -110,9 +110,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         path: "/",
       });
 
-      // const socket = io('http://localhost:1080', {query: {token: tokens.accessToken}, transports: ['websocket']});
-      // setSocket(socket);
-
       setUser(user);
 
       // @ts-ignore
